@@ -44,7 +44,7 @@ export default async function Home() {
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="bg-gradient-to-r from-accent to-violet bg-clip-text text-2xl font-semibold tracking-tight text-transparent">
-            Listening
+            My Wavelength
           </h1>
           <p className="text-sm text-muted">A running record of what I&apos;ve been playing.</p>
         </div>

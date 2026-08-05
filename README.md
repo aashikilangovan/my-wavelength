@@ -1,11 +1,11 @@
-# Listening — Personal Spotify Analytics Dashboard
+# My Wavelength — Personal Spotify Analytics Dashboard
 
 A personal dashboard that continuously ingests my own Spotify listening history and turns it into a
 dark, animated analytics dashboard: top tracks/artists/albums over time, a day/hour listening
 activity heatmap, an artist-discovery trend line, a recently-played feed, and a live "now playing"
 widget — every track/artist/album links out to Spotify.
 
-**Live: [spotify-listening-analytics.vercel.app](https://spotify-listening-analytics.vercel.app)**
+**Live: [my-wavelength.vercel.app](https://my-wavelength.vercel.app)**
 
 ![Dashboard preview](./docs/preview.png)
 
