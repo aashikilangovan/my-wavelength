@@ -1,7 +1,7 @@
 # My Wavelength — Personal Spotify Analytics Dashboard
 
 A personal dashboard that continuously ingests my own Spotify listening history and turns it into a
-neon, animated analytics dashboard: top tracks/artists/albums (with day-over-day rank-change
+warm, electric, animated analytics dashboard: top tracks/artists/albums (with day-over-day rank-change
 badges), a day/hour listening activity heatmap with a peak-time callout, an artist-discovery trend
 line, a monthly listening-minutes chart, streak/loop-factor stats, a recently-played feed with a
 "just played" pulse, and a live "now playing" widget with a spinning vinyl — every track/artist/
