@@ -40,4 +40,16 @@ export async function ensureSchema(): Promise<void> {
   for (const statement of statements) {
     await db.execute(statement);
   }
+
+  await runMigrations(db);
+}
+
+// Additive, idempotent migrations for columns added after the initial
+// schema — safe to run against a database that already has data.
+async function runMigrations(db: Client): Promise<void> {
+  const columns = await db.execute("PRAGMA table_info(plays)");
+  const hasAlbumId = columns.rows.some((row) => row.name === "album_id");
+  if (!hasAlbumId) {
+    await db.execute("ALTER TABLE plays ADD COLUMN album_id TEXT");
+  }
 }

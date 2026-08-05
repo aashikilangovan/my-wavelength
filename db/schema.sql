@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS plays (
   track_name TEXT NOT NULL,
   artist_ids TEXT NOT NULL, -- JSON array of artist ids
   artist_names TEXT NOT NULL, -- JSON array of artist names
+  album_id TEXT,
   album_name TEXT NOT NULL,
   album_art_url TEXT,
   duration_ms INTEGER NOT NULL,

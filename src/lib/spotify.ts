@@ -12,6 +12,7 @@ export interface SpotifyTrack {
   name: string;
   duration_ms: number;
   album: {
+    id: string;
     name: string;
     images: { url: string }[];
   };
@@ -124,6 +125,11 @@ export async function fetchTopItems(
     accessToken,
   );
   return data.items;
+}
+
+export async function fetchTrack(id: string): Promise<SpotifyTrack> {
+  const accessToken = await getAccessToken();
+  return spotifyFetch<SpotifyTrack>(`/tracks/${id}`, accessToken);
 }
 
 export async function fetchArtists(ids: string[]): Promise<SpotifyArtist[]> {

@@ -43,7 +43,9 @@ export default async function Home() {
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-10">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Listening</h1>
+          <h1 className="bg-gradient-to-r from-accent to-violet bg-clip-text text-2xl font-semibold tracking-tight text-transparent">
+            Listening
+          </h1>
           <p className="text-sm text-muted">A running record of what I&apos;ve been playing.</p>
         </div>
         <NowPlaying />
@@ -51,12 +53,13 @@ export default async function Home() {
 
       <Reveal>
         <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <StatCard label="Minutes tracked" value={stats.totalMinutes.toLocaleString()} />
-          <StatCard label="Unique tracks" value={stats.uniqueTracks.toLocaleString()} />
-          <StatCard label="Unique artists" value={stats.uniqueArtists.toLocaleString()} />
+          <StatCard label="Minutes tracked" value={stats.totalMinutes} />
+          <StatCard label="Unique tracks" value={stats.uniqueTracks} />
+          <StatCard label="Unique artists" value={stats.uniqueArtists} />
           <StatCard
             label="Current streak"
-            value={`${stats.streakDays}d`}
+            value={stats.streakDays}
+            suffix="d"
             hint={stats.streakDays > 0 ? "days with a play, back to back" : undefined}
           />
         </section>

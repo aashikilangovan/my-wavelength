@@ -2,11 +2,30 @@
 // upserts any new plays, resolving genres for artists we haven't seen yet.
 import "./load-env";
 import { ensureSchema, getDb } from "../src/lib/db";
-import { fetchArtists, fetchRecentlyPlayed } from "../src/lib/spotify";
+import { fetchArtists, fetchRecentlyPlayed, fetchTrack } from "../src/lib/spotify";
+
+async function backfillAlbumIds(db: ReturnType<typeof getDb>) {
+  const missing = await db.execute(
+    "SELECT DISTINCT track_id FROM plays WHERE album_id IS NULL",
+  );
+  if (missing.rows.length === 0) return;
+
+  for (const row of missing.rows) {
+    const trackId = row.track_id as string;
+    const track = await fetchTrack(trackId);
+    await db.execute({
+      sql: "UPDATE plays SET album_id = ? WHERE track_id = ?",
+      args: [track.album.id, trackId],
+    });
+  }
+  console.log(`Backfilled album_id for ${missing.rows.length} track(s).`);
+}
 
 async function main() {
   await ensureSchema();
   const db = getDb();
+
+  await backfillAlbumIds(db);
 
   const latest = await db.execute(
     "SELECT played_at FROM plays ORDER BY played_at DESC LIMIT 1",
@@ -31,14 +50,15 @@ async function main() {
 
     await db.execute({
       sql: `INSERT OR IGNORE INTO plays
-              (id, track_id, track_name, artist_ids, artist_names, album_name, album_art_url, duration_ms, played_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              (id, track_id, track_name, artist_ids, artist_names, album_id, album_name, album_art_url, duration_ms, played_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         id,
         track.id,
         track.name,
         JSON.stringify(artistIds),
         JSON.stringify(artistNames),
+        track.album.id,
         track.album.name,
         track.album.images[0]?.url ?? null,
         track.duration_ms,

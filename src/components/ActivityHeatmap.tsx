@@ -36,7 +36,7 @@ export function ActivityHeatmap({ cells }: { cells: HeatmapCell[] }) {
                   <div
                     key={`${day}-${hour}`}
                     title={`${day} ${hour}:00 — ${count} play${count === 1 ? "" : "s"}`}
-                    className="aspect-square rounded-[3px]"
+                    className="aspect-square rounded-[3px] transition-transform duration-150 hover:scale-125"
                     style={{ background: intensity(count, max) }}
                   />
                 );

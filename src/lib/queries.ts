@@ -2,6 +2,10 @@ import { getDb } from "./db";
 
 export type TimeRangeKey = "4w" | "6m" | "all";
 
+export const spotifyTrackUrl = (id: string) => `https://open.spotify.com/track/${id}`;
+export const spotifyArtistUrl = (id: string) => `https://open.spotify.com/artist/${id}`;
+export const spotifyAlbumUrl = (id: string) => `https://open.spotify.com/album/${id}`;
+
 function cutoffIso(range: TimeRangeKey): string | null {
   const days = range === "4w" ? 28 : range === "6m" ? 182 : null;
   if (days === null) return null;
@@ -65,6 +69,7 @@ export async function getOverviewStats(): Promise<OverviewStats> {
 export interface TopTrack {
   trackId: string;
   trackName: string;
+  trackUrl: string;
   artistNames: string[];
   albumArtUrl: string | null;
   playCount: number;
@@ -87,6 +92,7 @@ export async function getTopTracks(range: TimeRangeKey, limit = 10): Promise<Top
   return result.rows.map((row) => ({
     trackId: row.track_id as string,
     trackName: row.track_name as string,
+    trackUrl: spotifyTrackUrl(row.track_id as string),
     artistNames: JSON.parse(row.artist_names as string) as string[],
     albumArtUrl: row.album_art_url as string | null,
     playCount: Number(row.play_count),
@@ -96,6 +102,7 @@ export async function getTopTracks(range: TimeRangeKey, limit = 10): Promise<Top
 export interface TopArtist {
   artistId: string;
   artistName: string;
+  artistUrl: string;
   imageUrl: string | null;
   playCount: number;
 }
@@ -136,6 +143,7 @@ export async function getTopArtists(range: TimeRangeKey, limit = 10): Promise<To
     .map(([artistId, { name, count }]) => ({
       artistId,
       artistName: name,
+      artistUrl: spotifyArtistUrl(artistId),
       imageUrl: images.get(artistId) ?? null,
       playCount: count,
     }))
@@ -170,6 +178,8 @@ export async function getListeningHeatmap(): Promise<HeatmapCell[]> {
 }
 
 export interface TopAlbum {
+  albumId: string | null;
+  albumUrl: string | null;
   albumName: string;
   artistNames: string[];
   albumArtUrl: string | null;
@@ -179,20 +189,25 @@ export interface TopAlbum {
 export async function getTopAlbums(limit = 8): Promise<TopAlbum[]> {
   const db = getDb();
   const result = await db.execute({
-    sql: `SELECT album_name, artist_names, album_art_url, COUNT(*) AS play_count
+    sql: `SELECT album_id, album_name, artist_names, album_art_url, COUNT(*) AS play_count
           FROM plays
-          GROUP BY album_name, artist_names
+          GROUP BY COALESCE(album_id, album_name), artist_names
           ORDER BY play_count DESC
           LIMIT ?`,
     args: [limit],
   });
 
-  return result.rows.map((row) => ({
-    albumName: row.album_name as string,
-    artistNames: JSON.parse(row.artist_names as string) as string[],
-    albumArtUrl: row.album_art_url as string | null,
-    playCount: Number(row.play_count),
-  }));
+  return result.rows.map((row) => {
+    const albumId = row.album_id as string | null;
+    return {
+      albumId,
+      albumUrl: albumId ? spotifyAlbumUrl(albumId) : null,
+      albumName: row.album_name as string,
+      artistNames: JSON.parse(row.artist_names as string) as string[],
+      albumArtUrl: row.album_art_url as string | null,
+      playCount: Number(row.play_count),
+    };
+  });
 }
 
 export interface DiscoveryWeek {
@@ -229,7 +244,9 @@ export async function getDiscoveryTimeline(): Promise<DiscoveryWeek[]> {
 
 export interface RecentPlay {
   id: string;
+  trackId: string;
   trackName: string;
+  trackUrl: string;
   artistNames: string[];
   albumArtUrl: string | null;
   playedAt: string;
@@ -238,14 +255,16 @@ export interface RecentPlay {
 export async function getRecentPlays(limit = 25): Promise<RecentPlay[]> {
   const db = getDb();
   const result = await db.execute({
-    sql: `SELECT id, track_name, artist_names, album_art_url, played_at
+    sql: `SELECT id, track_id, track_name, artist_names, album_art_url, played_at
           FROM plays ORDER BY played_at DESC LIMIT ?`,
     args: [limit],
   });
 
   return result.rows.map((row) => ({
     id: row.id as string,
+    trackId: row.track_id as string,
     trackName: row.track_name as string,
+    trackUrl: spotifyTrackUrl(row.track_id as string),
     artistNames: JSON.parse(row.artist_names as string) as string[],
     albumArtUrl: row.album_art_url as string | null,
     playedAt: row.played_at as string,
