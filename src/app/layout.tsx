@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import { FloatingNotes } from "@/components/FloatingNotes";
+import { ClickNotes } from "@/components/ClickNotes";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <div className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-violet/15 blur-[130px]" />
         </div>
         <FloatingNotes />
+        <ClickNotes />
         <div className="relative">{children}</div>
       </body>
     </html>

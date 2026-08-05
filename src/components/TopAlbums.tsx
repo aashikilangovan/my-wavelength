@@ -30,6 +30,7 @@ export function TopAlbums({ albums }: { albums: TopAlbum[] }) {
                       <VinylIcon className="h-6 w-6 animate-spin text-white [animation-duration:3s]" />
                     </div>
                   )}
+                  <MusicNoteIcon className="hover-note pointer-events-none absolute right-1.5 top-1.5 h-3.5 w-3.5 text-accent" />
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-xs font-medium group-hover:text-accent">{a.albumName}</p>

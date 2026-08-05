@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { MusicNoteIcon } from "./icons";
 
 function useCountUp(target: number, durationMs = 900): number {
   const [value, setValue] = useState(0);
@@ -70,6 +71,9 @@ export function StatCard({
         {suffix}
       </p>
       {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
+      <MusicNoteIcon
+        className={`hover-note pointer-events-none absolute bottom-3 right-4 h-3.5 w-3.5 ${ICON_CLASS[accent]}`}
+      />
     </div>
   );
 }

@@ -16,6 +16,26 @@ export function ExternalLinkIcon({ className }: { className?: string }) {
   );
 }
 
+export function GuitarIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M15.5 2.5 21 8" />
+      <path d="M17.7 4.3 15 7l2 2 2.7-2.7" />
+      <path d="M15 7 6.5 15.5a3 3 0 1 0 2 2L17 9" />
+      <circle cx="7.2" cy="16.8" r="3.6" />
+      <path d="M5.2 15.5c.6-.6 1.7-.6 2.3 0M6 17.6c.6-.6 1.7-.6 2.3 0" />
+    </svg>
+  );
+}
+
 export function MusicNoteIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>

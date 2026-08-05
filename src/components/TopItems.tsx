@@ -122,8 +122,9 @@ export function TopItems({
                     href={t.trackUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-hover"
+                    className="group relative flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-hover"
                   >
+                    <MusicNoteIcon className="hover-note pointer-events-none absolute left-7 top-0.5 h-3 w-3 text-accent" />
                     <span className="w-5 text-right text-sm text-muted">{i + 1}</span>
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-background">
                       {t.albumArtUrl ? (
@@ -149,8 +150,9 @@ export function TopItems({
                     href={a.artistUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-hover"
+                    className="group relative flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-hover"
                   >
+                    <MusicNoteIcon className="hover-note pointer-events-none absolute left-7 top-0.5 h-3 w-3 text-accent" />
                     <span className="w-5 text-right text-sm text-muted">{i + 1}</span>
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-background">
                       {a.imageUrl ? (

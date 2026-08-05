@@ -1,6 +1,9 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { GuitarIcon } from "./icons";
+
+type Glyph = "single" | "double" | "guitar";
 
 interface Note {
   id: number;
@@ -9,12 +12,14 @@ interface Note {
   size: number;
   duration: number;
   drift: number;
-  glyph: "single" | "double";
+  spin: number;
+  glyph: Glyph;
   color: string;
 }
 
 const COLOR_VARS = ["var(--accent)", "var(--accent2)", "var(--violet)"];
-const NOTE_COUNT = 9;
+const GLYPHS: Glyph[] = ["single", "double", "guitar"];
+const NOTE_COUNT = 14;
 
 // Deterministic pseudo-random in [0, 1), seeded by index — keeps notes fully
 // static across server/client renders (no window access, no hydration
@@ -32,17 +37,19 @@ function buildNote(i: number): Note {
     id: i,
     left: seeded(i + 1) * 100,
     topPercent: -20 + seeded(i + 7) * 140,
-    size: 14 + seeded(i + 11) * 20,
-    duration: 22 + seeded(i + 23) * 16,
-    drift: (seeded(i + 51) - 0.5) * 80,
-    glyph: seeded(i + 67) > 0.5 ? "single" : "double",
+    size: 14 + seeded(i + 11) * 22,
+    duration: 20 + seeded(i + 23) * 18,
+    drift: (seeded(i + 51) - 0.5) * 90,
+    spin: (seeded(i + 83) - 0.5) * 60,
+    glyph: GLYPHS[Math.floor(seeded(i + 67) * GLYPHS.length) % GLYPHS.length],
     color: COLOR_VARS[i % COLOR_VARS.length],
   };
 }
 
 const NOTES: Note[] = Array.from({ length: NOTE_COUNT }, (_, i) => buildNote(i));
 
-function NoteGlyph({ variant, className }: { variant: "single" | "double"; className?: string }) {
+function NoteGlyph({ variant, className }: { variant: Glyph; className?: string }) {
+  if (variant === "guitar") return <GuitarIcon className={className} />;
   return variant === "single" ? (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
       <path d="M9 17.5V4.5a1 1 0 0 1 1.2-.98l8 1.6A1 1 0 0 1 19 6.1v9.9a3 3 0 1 1-2-2.83V7.7l-6-1.2v9.9a3 3 0 1 1-2 1.1Z" />
@@ -54,8 +61,8 @@ function NoteGlyph({ variant, className }: { variant: "single" | "double"; class
   );
 }
 
-// Purely decorative, ambient music-note drift behind the page content.
-// Nothing renders if the visitor prefers reduced motion.
+// Purely decorative, ambient music-note/guitar drift behind the page
+// content. Nothing renders if the visitor prefers reduced motion.
 export function FloatingNotes() {
   const reducedMotion = useReducedMotion();
   if (reducedMotion) return null;
@@ -73,15 +80,23 @@ export function FloatingNotes() {
             height: n.size,
             color: n.color,
           }}
-          initial={{ y: "0vh", x: 0, opacity: 0 }}
-          animate={{ y: "-160vh", x: [0, n.drift, 0], opacity: [0, 0.28, 0.28, 0] }}
+          initial={{ y: "0vh", x: 0, rotate: 0, opacity: 0 }}
+          animate={{
+            y: "-160vh",
+            x: [0, n.drift, 0],
+            rotate: [0, n.spin, 0],
+            opacity: [0, 0.34, 0.34, 0],
+          }}
           transition={{
             duration: n.duration,
             repeat: Infinity,
             ease: "linear",
           }}
         >
-          <NoteGlyph variant={n.glyph} className="h-full w-full drop-shadow-[0_0_6px_currentColor]" />
+          <NoteGlyph
+            variant={n.glyph}
+            className={n.glyph === "guitar" ? "h-full w-full drop-shadow-[0_0_5px_currentColor]" : "h-full w-full drop-shadow-[0_0_6px_currentColor]"}
+          />
         </motion.div>
       ))}
     </div>

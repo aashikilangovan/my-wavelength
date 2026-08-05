@@ -27,8 +27,9 @@ export function RecentlyPlayed({ plays }: { plays: RecentPlay[] }) {
               href={p.trackUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-hover"
+              className="group relative flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-hover"
             >
+              <MusicNoteIcon className="hover-note pointer-events-none absolute left-6 top-0.5 h-3 w-3 text-accent2" />
               <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-background">
                 {p.albumArtUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element

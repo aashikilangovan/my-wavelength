@@ -1,17 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #08070f;
-  --foreground: #f1f5f9;
-  --surface: #121026;
-  --surface-hover: #191536;
-  --border: #2a2650;
-  --muted: #948fc4;
-  --accent: #2ce0ff;
-  --accent-soft: #2ce0ff1a;
-  --accent2: #ff2ec4;
-  --accent2-soft: #ff2ec41a;
-  --violet: #8b5cf6;
+  /* Warm-electric: orange leads, electric pink/violet play backup — toned
+     down from a full neon cyan/magenta take, and a couple stops brighter
+     than pure near-black so it doesn't read as crushed. */
+  --background: #150f1a;
+  --foreground: #f5efe7;
+  --surface: #241b2c;
+  --surface-hover: #2e2338;
+  --border: #40324a;
+  --muted: #b0a0ac;
+  --accent: #ff9d4d;
+  --accent-soft: #ff9d4d1a;
+  --accent2: #ff5f96;
+  --accent2-soft: #ff5f961a;
+  --violet: #9b7cf5;
   --glow-accent: 0 0 24px color-mix(in srgb, var(--accent) 55%, transparent);
   --glow-accent2: 0 0 24px color-mix(in srgb, var(--accent2) 55%, transparent);
 }
@@ -45,4 +48,29 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* A little music note that pops up out of a hovered card — pure CSS so it's
+   cheap enough to put on every row without a JS listener per item. */
+@keyframes note-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5) rotate(-10deg);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1) rotate(6deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-22px) scale(0.85) rotate(14deg);
+  }
+}
+
+.hover-note {
+  opacity: 0;
+}
+
+.group:hover .hover-note {
+  animation: note-pop 0.8s ease-out;
 }
