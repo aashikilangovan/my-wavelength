@@ -76,7 +76,8 @@ npm run seed   # fills local.db with plausible fake listening data
 ## Deployment
 
 - **Vercel**: reads-only from Turso via `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN`, plus the Spotify
-  credentials for the now-playing API route.
+  credentials for the now-playing API route. Deploys are manual (no GitHub integration wired
+  up) — after pushing, run `vercel --prod` (linked to the `my-wavelength` project) to publish.
 - **GitHub Actions**: `.github/workflows/ingest-recent.yml` (every 30 min) and
   `capture-top-snapshot.yml` (daily) need `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`,
   `SPOTIFY_REFRESH_TOKEN`, `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` set as repo secrets.
