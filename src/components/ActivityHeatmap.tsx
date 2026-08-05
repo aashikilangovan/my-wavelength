@@ -1,22 +1,33 @@
 import { Fragment } from "react";
-import type { HeatmapCell } from "@/lib/queries";
+import { getPeakListeningSlot, type HeatmapCell } from "@/lib/queries";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+// Sequential, single-hue ramp (surface -> electric cyan) so intensity reads
+// as pure magnitude rather than a second color dimension.
 function intensity(count: number, max: number): string {
   if (max === 0 || count === 0) return "var(--surface-hover)";
   const t = count / max;
-  // interpolate surface-hover -> accent
   return `color-mix(in srgb, var(--accent) ${Math.round(t * 100)}%, var(--surface-hover))`;
 }
 
 export function ActivityHeatmap({ cells }: { cells: HeatmapCell[] }) {
   const max = Math.max(1, ...cells.map((c) => c.count));
+  const peak = getPeakListeningSlot(cells);
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-5">
-      <h3 className="text-sm font-medium text-muted">Listening activity</h3>
-      <p className="mb-4 text-xs text-muted">By day of week and hour (UTC)</p>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div>
+          <h3 className="text-sm font-medium text-muted">Listening activity</h3>
+          <p className="mb-4 text-xs text-muted">By day of week and hour (UTC)</p>
+        </div>
+        {peak && (
+          <p className="text-xs text-accent">
+            Peak: <span className="font-medium">{peak.label}</span>
+          </p>
+        )}
+      </div>
 
       <div className="overflow-x-auto">
         <div className="grid min-w-[640px] grid-cols-[auto_repeat(24,1fr)] gap-1">
@@ -36,7 +47,7 @@ export function ActivityHeatmap({ cells }: { cells: HeatmapCell[] }) {
                   <div
                     key={`${day}-${hour}`}
                     title={`${day} ${hour}:00 — ${count} play${count === 1 ? "" : "s"}`}
-                    className="aspect-square rounded-[3px] transition-transform duration-150 hover:scale-125"
+                    className="aspect-square rounded-[3px] transition-all duration-150 hover:scale-125 hover:shadow-[var(--glow-accent)]"
                     style={{ background: intensity(count, max) }}
                   />
                 );

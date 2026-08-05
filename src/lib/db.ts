@@ -23,7 +23,10 @@ export function getDb(): Client {
 export async function ensureSchema(): Promise<void> {
   const db = getDb();
   const schemaPath = path.join(process.cwd(), "db", "schema.sql");
-  const schema = fs.readFileSync(schemaPath, "utf-8");
+  // Normalize to LF first: on a CRLF checkout (e.g. Windows with
+  // core.autocrlf), a trailing \r survives the per-line comment strip below
+  // (JS regex `.` doesn't match \r) and corrupts the next statement.
+  const schema = fs.readFileSync(schemaPath, "utf-8").replace(/\r\n/g, "\n");
 
   // Strip line comments first — a semicolon inside a comment would
   // otherwise be mistaken for a statement boundary.

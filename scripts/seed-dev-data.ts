@@ -70,6 +70,37 @@ async function main() {
   }
 
   console.log(`Seeded ${ARTISTS.length} artists and ~${playCount} plays into local.db`);
+
+  // Two days of fake top_snapshots (today + yesterday, ranks lightly
+  // shuffled) so the rank-trend badges in the UI have something to compare
+  // against locally instead of showing everything as "NEW".
+  const now = new Date();
+  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const shuffledOrder = [1, 0, 3, 2, 4, 5, 6, 7]; // yesterday's rank order, by TRACKS/ARTISTS index
+
+  for (const [capturedAt, order] of [
+    [now.toISOString(), TRACKS.map((_, i) => i)] as const,
+    [yesterday.toISOString(), shuffledOrder] as const,
+  ]) {
+    for (let rank = 0; rank < order.length; rank++) {
+      const track = TRACKS[order[rank]];
+      const artist = ARTISTS[track.artist];
+      await db.execute({
+        sql: `INSERT INTO top_snapshots
+                (captured_at, time_range, item_type, rank, item_id, item_name, image_url)
+              VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        args: [capturedAt, "short_term", "track", rank + 1, track.id, track.name, null],
+      });
+      await db.execute({
+        sql: `INSERT INTO top_snapshots
+                (captured_at, time_range, item_type, rank, item_id, item_name, image_url)
+              VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        args: [capturedAt, "short_term", "artist", rank + 1, artist.id, artist.name, null],
+      });
+    }
+  }
+
+  console.log("Seeded 2 days of fake top_snapshots for rank-trend badges.");
 }
 
 main().catch((err) => {

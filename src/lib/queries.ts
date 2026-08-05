@@ -17,6 +17,13 @@ export interface OverviewStats {
   uniqueTracks: number;
   uniqueArtists: number;
   streakDays: number;
+  longestStreakDays: number;
+  loopFactor: number;
+}
+
+function daysBetween(a: string, b: string): number {
+  const ms = new Date(`${b}T00:00:00Z`).getTime() - new Date(`${a}T00:00:00Z`).getTime();
+  return Math.round(ms / 86_400_000);
 }
 
 export async function getOverviewStats(): Promise<OverviewStats> {
@@ -24,10 +31,12 @@ export async function getOverviewStats(): Promise<OverviewStats> {
 
   const totals = await db.execute(
     `SELECT COALESCE(SUM(duration_ms), 0) AS total_ms,
+            COUNT(*) AS total_plays,
             COUNT(DISTINCT track_id) AS unique_tracks
      FROM plays`,
   );
   const totalMs = Number(totals.rows[0]?.total_ms ?? 0);
+  const totalPlays = Number(totals.rows[0]?.total_plays ?? 0);
   const uniqueTracks = Number(totals.rows[0]?.unique_tracks ?? 0);
 
   const artistRows = await db.execute("SELECT artist_ids FROM plays");
@@ -58,11 +67,27 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     }
   }
 
+  // Longest-ever streak: walk the distinct days ascending, counting runs of
+  // calendar-consecutive days.
+  let longestStreakDays = 0;
+  let currentRun = 0;
+  const ascendingDays = [...days].reverse();
+  for (let i = 0; i < ascendingDays.length; i++) {
+    if (i === 0 || daysBetween(ascendingDays[i - 1], ascendingDays[i]) === 1) {
+      currentRun++;
+    } else {
+      currentRun = 1;
+    }
+    longestStreakDays = Math.max(longestStreakDays, currentRun);
+  }
+
   return {
     totalMinutes: Math.round(totalMs / 60000),
     uniqueTracks,
     uniqueArtists: artistSet.size,
     streakDays,
+    longestStreakDays,
+    loopFactor: uniqueTracks > 0 ? totalPlays / uniqueTracks : 0,
   };
 }
 
@@ -151,10 +176,96 @@ export async function getTopArtists(range: TimeRangeKey, limit = 10): Promise<To
     .slice(0, limit);
 }
 
+const RANGE_TO_SNAPSHOT: Record<TimeRangeKey, "short_term" | "medium_term" | "long_term"> = {
+  "4w": "short_term",
+  "6m": "medium_term",
+  all: "long_term",
+};
+
+export interface RankTrend {
+  /** Ranks moved up by this many spots since the previous daily snapshot; null = new entry. */
+  delta: number | null;
+}
+
+// Surfaces day-over-day rank movement from `top_snapshots`, which the daily
+// capture-top-snapshot workflow has been writing all along but nothing read
+// until now. Spotify's own short/medium/long_term windows line up with our
+// 4w/6m/all-time ranges, so we reuse that mapping.
+export async function getRankTrends(
+  itemType: "track" | "artist",
+  range: TimeRangeKey,
+): Promise<Map<string, RankTrend>> {
+  const db = getDb();
+  const timeRange = RANGE_TO_SNAPSHOT[range];
+
+  const capturedRows = await db.execute({
+    sql: `SELECT DISTINCT captured_at FROM top_snapshots
+          WHERE item_type = ? AND time_range = ?
+          ORDER BY captured_at DESC LIMIT 2`,
+    args: [itemType, timeRange],
+  });
+  const capturedAts = capturedRows.rows.map((r) => r.captured_at as string);
+  if (capturedAts.length < 2) return new Map();
+  const [latest, previous] = capturedAts;
+
+  const rows = await db.execute({
+    sql: `SELECT captured_at, item_id, rank FROM top_snapshots
+          WHERE item_type = ? AND time_range = ? AND captured_at IN (?, ?)`,
+    args: [itemType, timeRange, latest, previous],
+  });
+
+  const latestRanks = new Map<string, number>();
+  const previousRanks = new Map<string, number>();
+  for (const row of rows.rows) {
+    const bucket = row.captured_at === latest ? latestRanks : previousRanks;
+    bucket.set(row.item_id as string, Number(row.rank));
+  }
+
+  const trends = new Map<string, RankTrend>();
+  for (const [itemId, rank] of latestRanks) {
+    const prevRank = previousRanks.get(itemId);
+    trends.set(itemId, { delta: prevRank === undefined ? null : prevRank - rank });
+  }
+  return trends;
+}
+
+export interface MonthlyActivity {
+  month: string; // YYYY-MM
+  minutes: number;
+}
+
+export async function getMonthlyActivity(): Promise<MonthlyActivity[]> {
+  const db = getDb();
+  const result = await db.execute(
+    `SELECT strftime('%Y-%m', played_at) AS month, SUM(duration_ms) AS total_ms
+     FROM plays
+     GROUP BY month
+     ORDER BY month ASC`,
+  );
+
+  return result.rows.map((row) => ({
+    month: row.month as string,
+    minutes: Math.round(Number(row.total_ms) / 60000),
+  }));
+}
+
 export interface HeatmapCell {
   dayOfWeek: number; // 0 = Sunday
   hour: number;
   count: number;
+}
+
+const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+export function getPeakListeningSlot(cells: HeatmapCell[]): { label: string; count: number } | null {
+  let best: HeatmapCell | null = null;
+  for (const cell of cells) {
+    if (cell.count > 0 && (!best || cell.count > best.count)) best = cell;
+  }
+  if (!best) return null;
+  const hour12 = ((best.hour + 11) % 12) + 1;
+  const ampm = best.hour < 12 ? "am" : "pm";
+  return { label: `${DAY_LABELS[best.dayOfWeek]} ${hour12}${ampm}`, count: best.count };
 }
 
 export async function getListeningHeatmap(): Promise<HeatmapCell[]> {

@@ -1,9 +1,11 @@
 # My Wavelength — Personal Spotify Analytics Dashboard
 
 A personal dashboard that continuously ingests my own Spotify listening history and turns it into a
-dark, animated analytics dashboard: top tracks/artists/albums over time, a day/hour listening
-activity heatmap, an artist-discovery trend line, a recently-played feed, and a live "now playing"
-widget — every track/artist/album links out to Spotify.
+neon, animated analytics dashboard: top tracks/artists/albums (with day-over-day rank-change
+badges), a day/hour listening activity heatmap with a peak-time callout, an artist-discovery trend
+line, a monthly listening-minutes chart, streak/loop-factor stats, a recently-played feed with a
+"just played" pulse, and a live "now playing" widget with a spinning vinyl — every track/artist/
+album links out to Spotify.
 
 **Live: [my-wavelength.vercel.app](https://my-wavelength.vercel.app)**
 
@@ -17,7 +19,8 @@ Spotify Web API ──(GitHub Actions cron)──> Turso (libSQL) <──> Next.
 
 - A GitHub Actions workflow polls `recently-played` on a schedule and upserts new plays into a
   hosted [Turso](https://turso.tech) database, resolving artist images along the way. A second,
-  daily workflow snapshots top tracks/artists.
+  daily workflow snapshots top tracks/artists — the frontend diffs consecutive snapshots to show
+  ▲/▼/NEW rank-change badges on the top tracks/artists lists.
 - The Next.js app (App Router, server components) reads straight from Turso to render the
   dashboard, plus a small API route that polls Spotify's `currently-playing` endpoint for the live
   "now playing" widget.

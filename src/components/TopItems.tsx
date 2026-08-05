@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { TopArtist, TopTrack, TimeRangeKey } from "@/lib/queries";
-import { ExternalLinkIcon } from "./icons";
+import type { RankTrend, TopArtist, TopTrack, TimeRangeKey } from "@/lib/queries";
+import { ExternalLinkIcon, MusicNoteIcon, TrendDownIcon, TrendUpIcon, VinylIcon } from "./icons";
 
 const RANGE_LABELS: Record<TimeRangeKey, string> = {
   "4w": "4 weeks",
@@ -25,12 +25,37 @@ const rowVariants = {
   show: { opacity: 1, x: 0 },
 };
 
+// Day-over-day rank movement, sourced from the daily top_snapshots capture.
+function RankBadge({ trend }: { trend?: RankTrend }) {
+  if (!trend || trend.delta === 0) return null;
+
+  if (trend.delta === null) {
+    return (
+      <span className="rounded-full bg-accent2/15 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-accent2">
+        NEW
+      </span>
+    );
+  }
+
+  const up = trend.delta > 0;
+  return (
+    <span className={`flex items-center gap-0.5 text-[10px] font-medium ${up ? "text-accent" : "text-accent2"}`}>
+      {up ? <TrendUpIcon className="h-2.5 w-2.5" /> : <TrendDownIcon className="h-2.5 w-2.5" />}
+      {Math.abs(trend.delta)}
+    </span>
+  );
+}
+
 export function TopItems({
   tracksByRange,
   artistsByRange,
+  trackTrendsByRange,
+  artistTrendsByRange,
 }: {
   tracksByRange: Record<TimeRangeKey, TopTrack[]>;
   artistsByRange: Record<TimeRangeKey, TopArtist[]>;
+  trackTrendsByRange: Record<TimeRangeKey, Record<string, RankTrend>>;
+  artistTrendsByRange: Record<TimeRangeKey, Record<string, RankTrend>>;
 }) {
   const [range, setRange] = useState<TimeRangeKey>("4w");
   const [view, setView] = useState<"tracks" | "artists">("tracks");
@@ -52,7 +77,7 @@ export function TopItems({
               {view === v && (
                 <motion.span
                   layoutId="view-pill"
-                  className="absolute inset-0 rounded-full bg-accent"
+                  className="absolute inset-0 rounded-full bg-accent shadow-[var(--glow-accent)]"
                   transition={{ type: "spring", bounce: 0.25, duration: 0.4 }}
                 />
               )}
@@ -100,16 +125,19 @@ export function TopItems({
                     className="group flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-hover"
                   >
                     <span className="w-5 text-right text-sm text-muted">{i + 1}</span>
-                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md bg-background">
-                      {t.albumArtUrl && (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-background">
+                      {t.albumArtUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={t.albumArtUrl} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                      ) : (
+                        <MusicNoteIcon className="h-4 w-4 text-border" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium group-hover:text-accent">{t.trackName}</p>
                       <p className="truncate text-xs text-muted">{t.artistNames.join(", ")}</p>
                     </div>
+                    <RankBadge trend={trackTrendsByRange[range][t.trackId]} />
                     <span className="text-xs text-muted">{playsLabel(t.playCount)}</span>
                     <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
                   </a>
@@ -124,15 +152,18 @@ export function TopItems({
                     className="group flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-hover"
                   >
                     <span className="w-5 text-right text-sm text-muted">{i + 1}</span>
-                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-background">
-                      {a.imageUrl && (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-background">
+                      {a.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={a.imageUrl} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                      ) : (
+                        <VinylIcon className="h-5 w-5 text-border" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium group-hover:text-accent">{a.artistName}</p>
                     </div>
+                    <RankBadge trend={artistTrendsByRange[range][a.artistId]} />
                     <span className="text-xs text-muted">{playsLabel(a.playCount)}</span>
                     <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
                   </a>

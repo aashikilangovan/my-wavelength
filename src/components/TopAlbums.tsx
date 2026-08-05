@@ -1,5 +1,5 @@
 import type { TopAlbum } from "@/lib/queries";
-import { ExternalLinkIcon } from "./icons";
+import { MusicNoteIcon, VinylIcon } from "./icons";
 
 export function TopAlbums({ albums }: { albums: TopAlbum[] }) {
   return (
@@ -12,18 +12,22 @@ export function TopAlbums({ albums }: { albums: TopAlbum[] }) {
           {albums.map((a) => {
             const card = (
               <>
-                <div className="relative aspect-square overflow-hidden rounded-lg bg-background shadow-sm transition-shadow group-hover:shadow-lg group-hover:shadow-accent/10">
-                  {a.albumArtUrl && (
+                <div className="relative aspect-square overflow-hidden rounded-lg bg-background shadow-sm transition-shadow duration-300 group-hover:shadow-[var(--glow-accent)]">
+                  {a.albumArtUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={a.albumArtUrl}
                       alt=""
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <MusicNoteIcon className="h-6 w-6 text-border" />
+                    </div>
                   )}
                   {a.albumUrl && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/30 group-hover:opacity-100">
-                      <ExternalLinkIcon className="h-5 w-5 text-white" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
+                      <VinylIcon className="h-6 w-6 animate-spin text-white [animation-duration:3s]" />
                     </div>
                   )}
                 </div>

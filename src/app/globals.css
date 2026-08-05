@@ -1,15 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b0a10;
-  --foreground: #f2eee9;
-  --surface: #15131c;
-  --surface-hover: #1b1824;
-  --border: #29242f;
-  --muted: #9c95a8;
-  --accent: #f2994a;
-  --accent-soft: #f2994a1a;
-  --violet: #7c6cf0;
+  --background: #08070f;
+  --foreground: #f1f5f9;
+  --surface: #121026;
+  --surface-hover: #191536;
+  --border: #2a2650;
+  --muted: #948fc4;
+  --accent: #2ce0ff;
+  --accent-soft: #2ce0ff1a;
+  --accent2: #ff2ec4;
+  --accent2-soft: #ff2ec41a;
+  --violet: #8b5cf6;
+  --glow-accent: 0 0 24px color-mix(in srgb, var(--accent) 55%, transparent);
+  --glow-accent2: 0 0 24px color-mix(in srgb, var(--accent2) 55%, transparent);
 }
 
 @theme inline {
@@ -20,13 +24,25 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
+  --color-accent2: var(--accent2);
   --color-violet: var(--violet);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-space-grotesk);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
